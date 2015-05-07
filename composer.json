@@ -1,0 +1,25 @@
+{
+    "name": "jimbojsb/phpancakes",
+    "description": "Schema and data sync tools for PHP and MySQL",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Josh Butts",
+            "email": "josh@joshbutts.com",
+            "role": "developer"
+        }
+    ],
+    "require-dev": {
+      "phpunit/phpunit": "4.*",
+      "jimbojsb/pseudo": "0.2.*",
+      "psr/log": "*"
+    },
+    "recommand": {
+      "psr/log": "if you want logging enabled, you'll need psr/log installed for the hints on those methods"
+    },
+    "autoload": {
+        "psr-0": {
+            "Pancakes": "src/"
+        }
+    }
+}
