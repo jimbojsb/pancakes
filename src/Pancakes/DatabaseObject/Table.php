@@ -8,14 +8,40 @@ class Table
 
     /** @var string */
     protected $name;
+
+    /**
+     * @var array
+     */
     protected $columns = [];
+
+    /**
+     * @var string
+     */
     protected $engine = self::ENGINE_INNODB;
+
+    /**
+     * @var string
+     */
     protected $charset = self::CHARSET_UTF8;
+
+    /**
+     * @var int
+     */
     protected $autoIncrement = 1;
 
-    public function __construct($name)
+    /**
+     * @var Schema
+     */
+    protected $schema;
+
+    /**
+     * @param Schema $schema
+     * @param $name
+     */
+    public function __construct(Schema $schema, $name)
     {
         $this->name = $name;
+        $this->schema = $schema;
     }
 
     /**
@@ -104,6 +130,17 @@ class Table
     public function setAutoIncrement($autoIncrement)
     {
         $this->autoIncrement = $autoIncrement;
+    }
+
+    public function existsOnConnection(\PDO $connection)
+    {
+        $database = $connection->
+        $sql = "SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA='$database' TABLE_NAME='$tableName'";
+        $result = $connection->query($sql);
+        if ($result->rowCount() == 1) {
+            return true;
+        }
+        return false;
     }
 
 

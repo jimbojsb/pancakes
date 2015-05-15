@@ -1,11 +1,43 @@
 <?php
 namespace Pancakes\DataTransfer;
 
+use \Pancakes\DatabaseObject\Schema;
+
 class CopyTransfer
 {
     use TransferTrait;
+    use \Psr\Log\LoggerAwareTrait;
+    use \Psr\Log\LoggerTrait;
+
+
+    /**
+     * @var TransferSpecification array
+     */
+    protected $transferSpecs = [];
+
 
     public function execute()
+    {
+        $sourceSchema = Schema::fromConnection($this->sourceConnection);
+        $destinationSchema = Schema::fromConnection($this->destinationConnection);
+
+        $destinationMaxPacket = $this->getMaxPacket();
+        $this->debug("Destination max packet size: $destinationMaxPacket");
+
+        foreach ($this->transferSpecs as $spec) {
+            $table = $spec->getTable();
+            if ($sourceSchema->hasTable($table)) {
+                if ($destinationSchema->hasTable($table)) {
+                } else {
+                    $this->info("Table " . $table->getName() . " does not exist in destination, it will be skipped");
+                }
+            } else {
+                $this->info("Table " . $table->getName() . " does not exist in source, it will be skipped");
+            }
+        }
+    }
+
+    public function __execute()
     {
         $this->validateTargets();
         $source = $input->getArgument('source_connection');
@@ -151,4 +183,21 @@ class CopyTransfer
         }
         $destinationConnection->query("SET FOREIGN_KEY_CHECKS=1");
     }
+
+    /**
+     * Logs with an arbitrary level.
+     *
+     * @param mixed $level
+     * @param string $message
+     * @param array $context
+     * @return null
+     */
+    public function log($level, $message, array $context = array())
+    {
+        if ($this->logger) {
+            $this->logger->log($level, $message, $context);
+        }
+    }
+
+
 }

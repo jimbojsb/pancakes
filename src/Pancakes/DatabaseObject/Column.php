@@ -3,26 +3,45 @@ namespace Pancakes\DatabaseObject;
 
 class Column
 {
-    const TYPE_VARCHAR = 'VARCHAR';
-    const TYPE_INT = 'INT';
-    const TYPE_BIGINT = 'BIGINT';
-    const TYPE_TINYTEXT = 'TINYTEXT';
-    const TYPE_TEXT = 'TEXT';
-    const TYPE_BLOB = 'BLOB';
-    const TYPE_CHAR = 'CHAR';
-    const TYPE_TINYINT = 'TINYINT';
-    const TYPE_DATE = 'DATE';
-    const TYPE_DATETIME = 'DATETIME';
-    const TYPE_TIMESTAMP = 'TIMESTAMP';
-
-    const OPTION_UNSIGNED = 'UNSIGNED';
-
+    /**
+     * @var int
+     */
     protected $length;
+
+    /**
+     * @var int
+     */
     protected $precision;
+
+    /**
+     * @var int
+     */
     protected $scale;
+
+    /**
+     * @var string
+     */
     protected $type;
-    protected $options = [];
+
+    /**
+     * @var string
+     */
+    protected $options;
+
+    /**
+     * @var mixed
+     */
     protected $defaultValue;
+
+    /**
+     * @var bool;
+     */
+    protected $signed = true;
+
+    /**
+     * @var bool
+     */
+    protected $nullable = true;
 
     /** @var string */
     protected $name;
@@ -43,18 +62,39 @@ class Column
         return "`$this->name`";
     }
 
+    /**
+     * @return string
+     */
     public function getDefinition()
     {
         $string = $this->getQuotedName() . " ";
         $string .= strtoupper($this->type);
-        if ($this->hasLength()) {
+        if ($this->length) {
             $string .= "($this->length)";
+        } else if ($this->precision && !$this->scale) {
+            $string .= "($this->precision)";
+        } else if ($this->scale && $this->precision) {
+            $string .= "($this->precision,$this->scale)";
         }
+
+        if (!$this->signed) {
+            $string .= " UNSIGNED";
+        }
+
+        if (!$this->nullable) {
+            $string .= " NOT NULL";
+        }
+
         if ($this->options) {
-            $string .= " " . implode(" ", $this->options);
+            $string .= " " . $this->options;
         }
 
         return $string;
+    }
+
+    public function isEqualTo(Column $column)
+    {
+        return $this->getDefinition() == $column->getDefinition();
     }
 
     /**
@@ -66,7 +106,7 @@ class Column
     }
 
     /**
-     * @param mixed $precision
+     * @param int $precision
      */
     public function setPrecision($precision)
     {
@@ -74,7 +114,7 @@ class Column
     }
 
     /**
-     * @param mixed $scale
+     * @param int $scale
      */
     public function setScale($scale)
     {
@@ -90,7 +130,7 @@ class Column
     }
 
     /**
-     * @param array $options
+     * @param string $options
      */
     public function setOptions($options)
     {
@@ -105,29 +145,49 @@ class Column
         $this->defaultValue = $defaultValue;
     }
 
-
-
-    protected function hasLength()
+    /**
+     * @param boolean $signed
+     */
+    public function setSigned($signed)
     {
-        if (in_array($this->type, [
-            self::TYPE_INT,
-            self::TYPE_TINYINT,
-            self::TYPE_VARCHAR,
-            self::TYPE_CHAR,
-            self::TYPE_BIGINT
-        ])) {
-            return true;
-        } else {
-            return false;
-        }
+        $this->signed = $signed;
+    }
+
+
+    /**
+     * @param boolean $nullable
+     */
+    public function setNullable($nullable)
+    {
+        $this->nullable = $nullable;
     }
 
     public static function fromInformationSchemaArray(array $data)
     {
-        $column = new self(
-            $data["COLUMN_NAME"],
-            strtoupper($data["DATA_TYPE"]),
+        $column = new self($data["COLUMN_NAME"]);
+        if ($data["CHARACTER_LENGTH"]) {
+            $column->setLength($data["CHARACTER_LENGTH"]);
+        } else if ($data["NUMERIC_SCALE"]) {
+            $column->setScale($data["NUMERIC_SCALE"]);
+            $column->setPrecision($data["NUMERIC_PRECISION"]);
+        }
 
-        );
+        if ($data["NULLABLE"] === "YES") {
+            $column->setNullable(true);
+        } else {
+            $column->setNullable(false);
+        }
+
+        if ($data["EXTRA"]) {
+            $column->options = $data["EXTRA"];
+        }
+
+        if (strpos($data["COLUMN_TYPE"], "unsigned") !== false) {
+            $column->signed = false;
+        } else {
+            $column->signed = true;
+        }
+
+        return $column;
     }
 }

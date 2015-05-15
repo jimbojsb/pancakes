@@ -2,32 +2,17 @@
 namespace Pancakes\DataTransfer;
 
 use \Pancakes\DatabaseObject\Table;
+use \Pancakes\DatabaseObject\Schema;
 
 class TransferSpecification
 {
     /**
-     * @var Table
+     * @var Schema
      */
-    protected $table;
-    protected $columns = [];
-    protected $constraints = [];
-    protected $transformations = [];
-
-    public function __construct($table)
-    {
-        if (!($table instanceof Table)) {
-            $table = new Table($table);
-        }
-        $this->table = $table;
-    }
+    protected $schema;
 
     /**
-     * @return Table
+     * @var array
      */
-    public function getTable()
-    {
-        return $this->table;
-    }
-
-
+    protected $tables;
 }

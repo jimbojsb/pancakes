@@ -3,66 +3,54 @@ use \Pancakes\DatabaseObject\Column;
 
 class ColumnTest extends PHPUnit_Framework_TestCase
 {
-    public function testGetQuotedName()
+    public function testLengthDefinition()
     {
-        $c = new Column('test', Column::TYPE_VARCHAR, 64);
-        $expected = "`test`";
-        $this->assertEquals($expected, $c->getQuotedName());
+        $c = new Column("test");
+        $c->setLength(20);
+        $c->setType("char");
+        $this->assertEquals("`test` CHAR(20)", $c->getDefinition());
     }
 
-    public function testRenderVarchar()
+    public function testPrecisionOnlyDefinition()
     {
-        $c = new Column('test', Column::TYPE_VARCHAR, 64);
-        $expected = "`test` VARCHAR(64)";
-        $this->assertEquals($expected, $c->getDefinition());
+        $c = new Column("test");
+        $c->setPrecision(11);
+        $c->setType("int");
+        $this->assertEquals("`test` INT(11)", $c->getDefinition());
     }
 
-    public function testRenderInt()
+    public function testPrecisionAndScaleDefintion()
     {
-        $c = new Column('test', Column::TYPE_INT, 11);
-        $expected = "`test` INT(11)";
-        $this->assertEquals($expected, $c->getDefinition());
+        $c = new Column("test");
+        $c->setPrecision(6);
+        $c->setScale(2);
+        $c->setType("decimal");
+        $this->assertEquals("`test` DECIMAL(6,2)", $c->getDefinition());
     }
 
-    public function testRenderChar()
+    public function testUnsignedColumnDefinition()
     {
-        $c = new Column('test', Column::TYPE_CHAR, 64);
-        $expected = "`test` CHAR(64)";
-        $this->assertEquals($expected, $c->getDefinition());
+        $c = new Column("test");
+        $c->setLength(20);
+        $c->setType("bigint");
+        $c->setSigned(false);
+        $this->assertEquals("`test` BIGINT(20) UNSIGNED", $c->getDefinition());
     }
 
-    public function testRenderTinyInt()
+    public function testColumnOptionsDefinition()
     {
-        $c = new Column('test', Column::TYPE_TINYINT, 1);
-        $expected = "`test` TINYINT(1)";
-        $this->assertEquals($expected, $c->getDefinition());
-    }
+        $c = new Column("test");
+        $c->setLength(11);
+        $c->setType("int");
+        $c->setOptions("AUTO_INCREMENT");
+        $c->setNullable(false);
+        $this->assertEquals("`test` INT(11) NOT NULL AUTO_INCREMENT", $c->getDefinition());
 
-    public function testRenderBigInt()
-    {
-        $c = new Column('test', Column::TYPE_BIGINT, 20);
-        $expected = "`test` BIGINT(20)";
-        $this->assertEquals($expected, $c->getDefinition());
-    }
-
-    public function testRenderDate()
-    {
-        $c = new Column('test', Column::TYPE_DATE);
-        $expected = "`test` DATE";
-        $this->assertEquals($expected, $c->getDefinition());
-    }
-
-    public function testRenderDateTime()
-    {
-        $c = new Column('test', Column::TYPE_DATETIME);
-        $expected = "`test` DATETIME";
-        $this->assertEquals($expected, $c->getDefinition());
-    }
-
-    public function testRenderTimestamp()
-    {
-        $c = new Column('test', Column::TYPE_TIMESTAMP);
-        $expected = "`test` TIMESTAMP";
-        $this->assertEquals($expected, $c->getDefinition());
+        $c = new Column("test");
+        $c->setLength(11);
+        $c->setType("int");
+        $c->setOptions("AUTO_INCREMENT");
+        $c->setNullable(true);
+        $this->assertEquals("`test` INT(11) AUTO_INCREMENT", $c->getDefinition());
     }
 }

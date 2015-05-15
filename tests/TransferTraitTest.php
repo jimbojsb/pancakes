@@ -1,21 +1,18 @@
 <?php
+use Pancakes\DataTransfer\TransferTrait;
+use Pseudo\Pdo;
+
 class TransferTraitTest extends PHPUnit_Framework_TestCase
 {
-    use \Pancakes\DataTransfer\TransferTrait;
+    use TransferTrait;
 
-    public function testGetMaxPacket()
+    public function testConnectionSetters()
     {
-        $pdo = new Pseudo\Pdo();
-        $pdo->mock("SHOW VARIABLES LIKE 'max_allowed_packet'", [["Value" => 12345]]);
+        $pdo = new Pdo();
         $this->setDestinationConnection($pdo);
-        $this->assertEquals(12345, $this->getMaxPacket());
-    }
+        $this->setSourceConnection($pdo);
 
-    public function testTransfer()
-    {
-        $spec = $this->transfer('test');
-        $this->assertInstanceOf('Pancakes\DataTransfer\TransferSpecification', $spec);
-        $this->assertInstanceOf('\Pancakes\DatabaseObject\Table', $spec->getTable());
-        $this->assertEquals('test', $spec->getTable()->getName());
+        $this->assertInstanceOf('PDO', $this->sourceConnection);
+        $this->assertInstanceOf('PDO', $this->destinationConnection);
     }
 }

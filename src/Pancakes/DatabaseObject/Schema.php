@@ -37,6 +37,21 @@ class Schema
     }
 
     /**
+     * @param Table|string $table
+     * @return bool
+     */
+    public function hasTable($table)
+    {
+        if ($table instanceof Table) {
+            $table = $table->getName();
+        }
+        if ($this->tables[$table]) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * @return array
      */
     public function getTables()
@@ -55,10 +70,10 @@ class Schema
             $databaseName = $connection->query("SELECT DATABASE()")->fetchColumn();
         }
         $schema = new self($databaseName);
-        $tableList = $connection->query("SELECT TABLE_NAME FROM TABLES WHERE TABLE_SCHEMA='$databaseName'");
+        $tableList = $connection->query("SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA='$databaseName'");
         if ($tableList) {
             while ($table = $tableList->fetchColumn()) {
-                $tableObj = new Table($table);
+                $tableObj = new Table($schema, $table);
                 $schema->addTable($tableObj);
             }
         }

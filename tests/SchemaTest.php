@@ -16,7 +16,7 @@ class SchemaTest extends PHPUnit_Framework_TestCase
     public function testAddAndRetrieveTable()
     {
         $schema = new Schema("test");
-        $table = new Table("test_table");
+        $table = new Table($schema, "test_table");
         $schema->addTable($table);
         $this->assertEquals(spl_object_hash($table), spl_object_hash($schema->getTable("test_table")));
     }
@@ -24,7 +24,7 @@ class SchemaTest extends PHPUnit_Framework_TestCase
     public function testCreationFromInformationSchema()
     {
         $connection = new Pdo();
-        $connection->mock("SELECT TABLE_NAME FROM TABLES WHERE TABLE_SCHEMA='test'", [
+        $connection->mock("SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA='test'", [
             ["TABLE_NAME" => "table1"],
             ["TABLE_NAME" => "table2"]
         ]);
@@ -36,5 +36,16 @@ class SchemaTest extends PHPUnit_Framework_TestCase
         $tables = $schema->getTables();
         $this->assertEquals("table1", $tables[0]->getName());
         $this->assertEquals("table2", $tables[1]->getName());
+    }
+
+    public function hasTable()
+    {
+        $s = new Schema('test');
+        $s->addTable('table1');
+        $this->assertTrue($s->hasTable('table1'));
+
+        $t = new Table($s, "test2");
+        $s->addTable($t);
+        $this->assertTrue($s->hasTable($t));
     }
 }

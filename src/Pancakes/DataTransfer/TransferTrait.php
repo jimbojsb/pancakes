@@ -3,25 +3,16 @@ namespace Pancakes\DataTransfer;
 
 trait TransferTrait
 {
-    /** @var  \Psr\Log\LoggerInterface */
-    protected $logger;
-
     /** @var  \PDO */
     protected $sourceConnection;
 
     /** @var  \PDO */
     protected $destinationConnection;
 
-    /** @var array */
-    protected $transferSpecifications = [];
-
     /**
-     * @param \Psr\Log\LoggerInterface $logger
+     * @var array
      */
-    public function setLogger($logger)
-    {
-        $this->logger = $logger;
-    }
+    protected $tables = [];
 
     /**
      * @param \PDO $sourceConnection
@@ -39,28 +30,13 @@ trait TransferTrait
         $this->destinationConnection = $destinationConnection;
     }
 
-    /**
-     * @param TransferSpecification $spec
-     */
-    public function addTransferSpecification(TransferSpecification $spec)
+    public function addTable($tableName, $options = [])
     {
-        $this->transferSpecifications[] = $spec;
-    }
-
-    public function transfer($tableName)
-    {
-        $spec = new TransferSpecification($tableName);
-        $this->addTransferSpecification($spec);
-        return $spec;
+        $this->tables[$tableName] = $options;
     }
 
     protected function getMaxPacket()
     {
-        $sql = "SHOW VARIABLES LIKE 'max_allowed_packet'";
-        $maxPacket = $this->destinationConnection->query($sql)->fetch(\PDO::FETCH_ASSOC)["Value"];
-        return $maxPacket;
+
     }
-
-
-
 }
